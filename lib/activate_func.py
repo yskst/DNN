@@ -7,6 +7,8 @@ import numpy
 
 # This is the libraries in activatefer functions.
 
+activate_functions = ["linear", "sigmoid", "softmax", "relu"]
+
 def activate_generetor(func, weight, bias):
     if func == "linear":
         return LinearLayer(weight, bias)
@@ -28,16 +30,14 @@ class LinearLayer(object):
         self.odim = weight.shape[1]
 
         # Allocate the memory of parameter.
-        self.w    = theano.shared(value=weight, name="w")
-        self.bias = theano.shared(value=bias, name="bias")
+        self.w    = theano.shared(value=weight)
+        self.bias = theano.shared(value=bias)
 
         # Allocate the memory of parameter's difference.
         self.diffw    = theano.shared(
-                value=numpy.zeros((self.idim,self.odim), dtype=theano.config.floatX),
-                name="diffw")
+                value=numpy.zeros((self.idim,self.odim), dtype=theano.config.floatX))
         self.diffbias = theano.shared(
-                value=numpy.zeros(self.idim, dtype=theano.config.floatX),
-                name="diffbias")
+                value=numpy.zeros(self.idim, dtype=theano.config.floatX))
 
     # Transfer function.
     def forward(self, x):
