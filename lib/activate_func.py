@@ -5,9 +5,9 @@ import theano
 import theano.tensor as T
 import numpy
 
-# This is the libraries in transfer functions.
+# This is the libraries in activatefer functions.
 
-def trans_generetor(func, weight, bias):
+def activate_generetor(func, weight, bias):
     if func == "linear":
         return LinearLayer(weight, bias)
     elif func == "sigmoid":
@@ -17,7 +17,7 @@ def trans_generetor(func, weight, bias):
     elif func == "relu":
         return ReLULayer(weight, bias)
     else:
-        raise NameError(func + ' is not defines as transfer function.')
+        raise NameError(func + ' is not defines as activatefer function.')
 
 
 class LinearLayer(object):
