@@ -7,6 +7,19 @@ import numpy
 
 # This is the libraries in transfer functions.
 
+def trans_generetor(func, weight, bias):
+    if func == "linear":
+        return LinearLayer(weight, bias)
+    elif func == "sigmoid":
+        return SigmoidLayer(weight, bias)
+    elif func == "softmax":
+        return SoftmaxLayer(weight, bias)
+    elif func == "relu":
+        return ReLULayer(weight, bias)
+    else:
+        raise NameError(func + ' is not defines as transfer function.')
+
+
 class LinearLayer(object):
 
     # Constructer
