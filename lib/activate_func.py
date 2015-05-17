@@ -42,19 +42,30 @@ class LinearLayer(object):
     # Transfer function.
     def forward(self, x):
         return T.dot(x, self.w) + self.bias
-
+    
+    def save(self, fname):
+        numpy.savez(fname, type="linear", w=self.w, bias=self.bias)       
 
 # Softmax class
 def SoftmaxLayer(LinearLayer):
     def forward(self, x):
         return T.nnet.softmax(super(SoftmaxLayer, self).forward(x))
+    def save(self, fname):
+        numpy.savez(fname, type="softmax", w=self.w, bias=self.bias)       
+
 
 # Sigmoid class
 def SigmoidLayer(LinearLayer):
     def forward(self, x):
         return T.nnet.sigmoid(super(SigmoidLayer, self).forward(x))
+    def save(self, fname):
+        numpy.savez(fname, type="sigmoid", w=self.w, bias=self.bias)       
+
+        
 
 # Rectified Linear class.
 def ReLULayer(LinearLayer):
     def forward(self, x):
         return T.max(super(ReLULayer, self).forward(x))
+    def save(self, fname):
+        numpy.savez(fname, type="softmax", w=self.w, bias=self.bias)       
