@@ -38,7 +38,7 @@ if __name__=='__main__':
     op.add_option("--rbmtype", action="store", dest="rbmtype",
             type="choice", choices=["gb", "bb"], metavar="[gb/bb]",
             help="gb:gaussain-bernoulli, bb:bernoulli-bernoulli")
-    op.add_option("-a", "--activate-function", action="store",dest="af",
+    op.add_option("-a", "--activate-function", action="store",dest="af_type",
             type="choice", choices=activate_func.activate_functions, 
             help="Activete function.")
 
@@ -79,7 +79,7 @@ if __name__=='__main__':
     else:
         b = np.zeros(hidnum, dtype=theano.config.floatX)
 
-    af = activate_func.activate_generetor(options.af, w, b)
+    actf = activate_func.activate_generetor(options.af_type, w, b)
     vbias     = theano.shared(
                     value=np.zeros(visnum, dtype=theano.config.floatX))
     diffvbias = theano.shared(
@@ -92,14 +92,14 @@ if __name__=='__main__':
             np.random.RandomState(seed).randint(2**30))
 
     v0act=T.fmatrix("v0act")
-    h0act=af.forward(v0act)
+    h0act=actf.forward(v0act)
     h0smp=gibbs_rng.binomial(
         size=(mbsize, hidnum),n=1,p=h0act,dtype=theano.config.floatX)
     if options.rbmtype == 'gb':
-        v1act=T.dot(h0smp, af.w.T) + vbias
+        v1act=T.dot(h0smp, actf.w.T) + vbias
     elif options.rbmtype == 'bb':
         v1act=T.nnet.sigmoid(T.dot(h0smp, af.w.T) + vbias)
-    h1act=af.forward(v1act)
+    h1act=actf.forward(v1act)
 
     # Create a formula of update.
     grad_w    = (T.dot(v1act.T,h1act)-T.dot(v0act.T,h0act))/mbsize
@@ -107,13 +107,13 @@ if __name__=='__main__':
     grad_vbias= (T.sum(v1act,axis=0) -T.sum(v0act,axis=0) )/mbsize
 
     updates_diff=[
-            (af.diffw, -lr*grad_w     +mm*af.diffw    -re*af.w),
-            (af.bias,  -lr*grad_hbias +mm*af.diffbias         ),
+            (actf.diffw, -lr*grad_w     +mm*actf.diffw    -re*actf.w),
+            (actf.bias,  -lr*grad_hbias +mm*actf.diffbias         ),
             (diffvbias,-lr*grad_vbias +mm*diffvbias           )]
 
     updates_update=[
-            (af.w,    af.w   +af.diffw    ),
-            (af.bias, af.bias+af.diffbias) ,
+            (actf.w,    actf.w   +actf.diffw    ),
+            (actf.bias, actf.bias+af.diffbias) ,
             (vbias,   vbias  +diffvbias)]
 
     mse=T.mean((v0act-v1act)**2)
@@ -145,4 +145,4 @@ if __name__=='__main__':
         sys.stdout.write("%3d epoch, %e mse (%f sec)\n" % (e+1, err, t2-t1)) 
 
     # output model parameter.
-    af.save(options.output)
+    actf.save(options.output)
