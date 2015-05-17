@@ -4,8 +4,10 @@
 import fileinput
 from optparse import OptionParser
 
-import Theano
 import numpy as np
+import Theano
+import theano.tensor as T
+from theano.sandbox.rng_mrg import MRG_RandomStream as RandomStreams
 import lib.activate_func
         
 
@@ -50,9 +52,9 @@ if __name__=='__main__':
             help="The initial bias value.")
 
     (options, args) = op.parse_args()
+    mbsize = options.mb
 
-
-    # LOad training data.
+    # Load training data.
     data = np.loadtxt(fileinput(args)).astype(theano.config.floatX)
     visnum = data.shape[1]
     hidnum = options.hidnum
@@ -66,19 +68,56 @@ if __name__=='__main__':
                 low=-4.0*np.sqrt(6.0/(hidnum+visnum)),
                 high=4.0*np.sqrt(6.0/(hidnum+visnum)),
                 size=(visnum, hidnum), dtype=theano.config.floatX)
-
     if options.bias:
         b = np.loadtxt(option.bias)
     else:
         b = np.zeros(hidnum, dtype=theano.config.floatX)
 
-    # Generate activate function class.
     af = activate_generetor(options.af, w, b)
-    # del w b
+    vbias     = theano.shared(
+                    value=numpy.zeros(visnum, dtype=theano.coding.floatX))
+    diffvbias = theano.shared(
+                    value=numpy.zeros(visnum,dtype=theano.coding.floatX))
 
-    vbias = theano.shared(
-            value=numpy.zeros(hidnum, dtype=theano.coding.floatX),
-            name="VBias")
+    
+    # Create a formula of propagation.
 
+    gibbs_rng=RandomStreams(
+            numpy.random.RandomState(options.seed).randint(2**30))
+
+    v0act=T.fmatrix("v0act")
+    h0act=af.forward(v0act)
+    h0smp=gibbs_rng.binomial(
+        size=(mbsize, hidnum),n=1,p=h0act,dtype=theano.coding.floatX)
+    if options.rbmtype == 'gb':
+        v1act=T.dot(h0smp, af.w.T) + vbias
+    elif options.rbmtype == 'bb':
+        v1act=T.nnet.sigmoid(T.dot(h0smp, af.w.T) + vbias)
+    h1act=af.forward(v1act)
+
+    # Create a formula of update.
+    grad_w    = (T.dot(v1act.T,h1act)-T.dot(v0act.T,h0act))/mbsize
+    grad_hbias= (T.sum(h1act,axis=0) -T.sum(h0act,axis=0) )/mbsize
+    grad_vbias= (T.sum(v1act,axis=0) -T.sum(v0act,axis=0) )/mbsize
+
+    updates_diff=[
+            (af.diffw, -lr*grad_w     +mm*af.diffW    -re*af.w),
+            (af.bias,  -lr*grad_hbias +mm*af.diffbias         ),
+            (diffvbias,-lr*grad_vbias +mm*diffvbias           )]
+
+    updates_update=[
+            (af.w,    af.w   +af.diffw    ),
+            (af.bias, af.bias+af.diffhbias) ,
+            (vbias,   vbias  +diffvbias)]
+
+    mse=T.mean((v0act-v1act)**2)
+
+    trainer_diff  =theano.function(inputs=[v0act],
+            outputs=mse,
+            updates=updates_diff)
+
+    trainer_update=theano.function(inputs=[],
+            outputs=None,
+            updates=updates_update)
 
 
