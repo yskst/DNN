@@ -1,6 +1,8 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+import time
+
 import fileinput
 from optparse import OptionParser
 
@@ -53,6 +55,10 @@ if __name__=='__main__':
 
     (options, args) = op.parse_args()
     mbsize = options.mb
+    lr = options.lr
+    mm = options.mm
+    re = options.re
+    seed = options.seed
 
     # Load training data.
     data = np.loadtxt(fileinput(args)).astype(theano.config.floatX)
@@ -64,7 +70,7 @@ if __name__=='__main__':
     if options.weight:
         w = np.loadtxt(options.weight)
     else:
-        w = np.random.RandomState(options.seed).uniform(
+        w = np.random.RandomState(seed).uniform(
                 low=-4.0*np.sqrt(6.0/(hidnum+visnum)),
                 high=4.0*np.sqrt(6.0/(hidnum+visnum)),
                 size=(visnum, hidnum), dtype=theano.config.floatX)
@@ -83,7 +89,7 @@ if __name__=='__main__':
     # Create a formula of propagation.
 
     gibbs_rng=RandomStreams(
-            numpy.random.RandomState(options.seed).randint(2**30))
+            numpy.random.RandomState(seed).randint(2**30))
 
     v0act=T.fmatrix("v0act")
     h0act=af.forward(v0act)
@@ -120,4 +126,23 @@ if __name__=='__main__':
             outputs=None,
             updates=updates_update)
 
+    numpy.random.seed(seed)
+    mbnum=data.shape[0]/mbsize
 
+    for e in range(options.epoch):
+        # shuffle of training data
+        t1 = time.clock()
+        numpy.random.shuffle(data)
+
+        # estimate by mini-batch
+        err = 0.0
+        for b in range(mbnum):
+            err += trainer_diff(data[mbsize*b:mbsize*(b+1)])
+            trainer_update()
+        err/=mbnum
+        t2 = time.clock()
+        
+        sys.stdout.write("%3d epoch, %e mse (%f sec)\n" % (e+1, err, t2-t1)) 
+
+    # output model parameter.
+    af.save()
