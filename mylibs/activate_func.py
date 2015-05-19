@@ -9,7 +9,11 @@ import numpy
 
 activate_functions = ["linear", "sigmoid", "softmax", "relu"]
 
-def activate_generetor(func, weight, bias):
+def load(fname):
+    f = numpy.load(fname)
+    return generetor(f['type'], f['w'], f['bias'])
+
+def generetor(func, weight, bias):
     if func == "linear":
         return LinearLayer(weight, bias)
     elif func == "sigmoid":

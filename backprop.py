@@ -4,25 +4,27 @@
 import sys
 import time
 
-import fileinput
+from fileinput import FileInput
 from optparse import OptionParser
 
 import numpy as np
 import theano
 import theano.tensor as T
-from theano.sandbox.rng_mrg import MRG_RandomStreams as RandomStreams
 from mylibs import activate_func
 
 if __name__=='__main__':
 
     # Option analysis.
-    usage="%prog [options] files..."
+    usage="%prog [options] [data label]...\n
+            [data label] must be an even number.The Even-numbered is the input and the odd-numbered is the output correspondig to the input."
     desc ="Training DNN with backpropagation."
     op = OptionParser(usage=usage, description=desc)
     
     # Required option.
     op.add_option("-l", "--init-layer", action="append", dest="layers",
-            metavar="FILE", type="string", help="Initial value of each layer.")
+            metavar="FILE", type="string",
+            help="Initial value of each layer. This option can use several times.
+                  The decleared order is mutch to the each layer.")
     op.add_option("-o",  "--output", action="store", dest="output",metavar="FILE"
             type="string",help="output file name which is npz format")
     op.add_option("--lr", action="store", dest="lr",
@@ -48,4 +50,24 @@ if __name__=='__main__':
     mm     = float(options.mm)
     re     = float(options.re)
     seed   = int(options.seed)
+
+
+    # load data.
+    L = []
+    for f in options.layers:
+        L.append(activate_func.load(f))
+
+    dat = np.loadtxt(FileInput(args[1::2]))
+    tar = np.loadtxt(Fileinput(args[2::2]))
+
+    # Formula to calcurate output of DNN.
+    x = T.fmatrix("x")
+    p = L[0].forward(x)
+    for layer in L[1:]:
+        p = layer.forward(p)
+
+    # Formula to calcurate cost which is cross entropy.
+    y = 
+    
+
 

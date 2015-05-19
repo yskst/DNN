@@ -79,7 +79,7 @@ if __name__=='__main__':
     else:
         b = np.zeros(hidnum, dtype=theano.config.floatX)
 
-    af = activate_func.activate_generetor(options.af, w, b)
+    af = activate_func.generetor(options.af, w, b)
     vbias     = theano.shared(
                     value=np.zeros(visnum, dtype=theano.config.floatX))
     diffvbias = theano.shared(
