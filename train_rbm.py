@@ -43,9 +43,9 @@ if __name__=='__main__':
             type="string", help="output file name which is npz format")
     op.add_option("--lr", action="store", dest="lr",
             type="float", help="learning rate")
-    op.add_option("--mm", action="store", dest="mm", default=0
+    op.add_option("--mm", action="store", dest="mm", default=0,
             type="float", help="momentum [default: %default]")
-    op.add_option("--re", action="store", dest="re",default=
+    op.add_option("--re", action="store", dest="re",default=0,
             type="float", help="L2-reguralizer [default: %default]")
     op.add_option("-e",  "--epoch", action="store", dest="epoch",
             type="int",   help="Training epoch.")
@@ -55,11 +55,11 @@ if __name__=='__main__':
             type="choice", choices=["gb", "bb"], metavar="[gb/bb]",
             help="gb:gaussain-bernoulli, bb:bernoulli-bernoulli")
     op.add_option("--af", action="store",dest="af",
-            type="choice", choices=activate_func.activate_functions, 
-            help="Activete function.\n" + str(activate_func.activate_functions))
+            type="choice", choices=activate_func.activate_functions, metavar=str(activate_func.activate_functions),
+            help="Activete function.\n")
     op.add_option("--df", action="store",dest="df",
-            type="chice", chices=["f4ne", "f4be", "f4le", "npy"]), metavar="[f4ne/f4be/f4le/npy]",
-            help="sample data is raw 4byte float format with native/big/little endian or npy(npz) format."
+            type="choice", choices=["f4ne", "f4be", "f4le", "npy"], metavar="[f4ne/f4be/f4le/npy]",
+            help="sample data is raw 4byte float format with native/big/little endian or npy(npz) format.")
 
     # Optional option.
     op.add_option("--sd", "--random-seed", action="store", dest="seed",
