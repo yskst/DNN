@@ -37,6 +37,9 @@ if __name__=='__main__':
             type="int",   help="Training epoch.")
     op.add_option("--mb", action="store", dest="mb",
             type="int",   help="The size of minibatch.")
+    op.add_option("--ot", action="store", dest="ot",
+            type="choice", choices=["c", "f"], metavar="c/f",
+            help="output layer type is category or feature vector")
     
     # Optional option.
     op.add_option("--seed", "--random-seed", action="store", dest="seed",
@@ -67,7 +70,12 @@ if __name__=='__main__':
         p = layer.forward(p)
 
     # Formula to calcurate cost which is cross entropy.
-    y = 
+    if options.ot == 'c':
+        y    = T.ivector("y")
+        cost = T.sum(T.nnet.categorical_crossentropy(p, y)) / mbsize
+    else if options.ot == 'f':
+        y    = T.fmatrix("y")
+        cost = T.sum((p-y)*(p-y)) / mbsize
     
 
 
