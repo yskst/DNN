@@ -13,37 +13,65 @@ import theano.tensor as T
 from theano.sandbox.rng_mrg import MRG_RandomStreams as RandomStreams
 from mylibs import activate_func
 
+def stderr(s):
+    sys.stderr.write(s)
+
+def load_data(format, fname, visnum):
+    
+    if format == 'npy':
+        data = load(fname)
+
+        if data.shape()[0] != visnum:
+            stderr("Dimension miamatch between training data and visnum.\n")
+            sys.exit(1)
+        return data
+    else:
+        if   format == 'f4be': type='>f4'
+        elif format == 'f4le': type='<f4'
+        elif format == 'f4ne': type='=f4'
+        return np.fromfile(fname, dtype=type).reshape(visnum,-1)
+
 if __name__=='__main__':
 
     # Option analysis.
-    usage="%prog [options] files..."
+    usage="%prog [options] hidnum visnum file"
     desc ="Training Restricted Boltzmann machine."
     op = OptionParser(usage=usage, description=desc)
     
     # Required option.
-    op.add_option("-o",  "--output", action="store", dest="output",
+    op.add_option("-o",  "--of", action="store", dest="output",
             type="string", help="output file name which is npz format")
-    op.add_option("--hidnum", action="store", dest="hidnum",
-            type="int", help="The number of hidden layer's perceptron")
     op.add_option("--lr", action="store", dest="lr",
             type="float", help="learning rate")
-    op.add_option("--mm", action="store", dest="mm",
-            type="float", help="momentum")
-    op.add_option("--re", action="store", dest="re",
-            type="float", help="L2-reguralizer")
+    op.add_option("--mm", action="store", dest="mm", default=0,
+            type="float", help="momentum [default: %default]")
+    op.add_option("--re", action="store", dest="re",default=0,
+            type="float", help="L2-reguralizer [default: %default]")
     op.add_option("-e",  "--epoch", action="store", dest="epoch",
             type="int",   help="Training epoch.")
     op.add_option("--mb", action="store", dest="mb",
             type="int",   help="The size of minibatch.")
-    op.add_option("--rbmtype", action="store", dest="rbmtype",
+    op.add_option("--rt", action="store", dest="rbmtype",
             type="choice", choices=["gb", "bb"], metavar="[gb/bb]",
             help="gb:gaussain-bernoulli, bb:bernoulli-bernoulli")
-    op.add_option("-a", "--activate-function", action="store",dest="af_type",
-            type="choice", choices=activate_func.activate_functions, 
-            help="Activete function.")
+<<<<<<< HEAD
+        op.add_option("--af", action="store",dest="af",
+            type="choice", choices=activate_func.activate_functions, metavar=str(activate_func.activate_functions),
+            help="Activete function.\n")
+        op.add_option("--df", action="store",dest="df",
+            type="choice", choices=["f4ne", "f4be", "f4le", "npy"], metavar="[f4ne/f4be/f4le/npy]",
+            help="sample data is raw 4byte float format with native/big/little endian or npy(npz) format.")
+=======
+    op.add_option("--af", action="store",dest="af",
+            type="choice", choices=activate_func.activate_functions, metavar=str(activate_func.activate_functions),
+            help="Activete function.\n")
+    op.add_option("--df", action="store",dest="df",
+            type="choice", choices=["f4ne", "f4be", "f4le", "npy"], metavar="[f4ne/f4be/f4le/npy]",
+            help="sample data is raw 4byte float format with native/big/little endian or npy(npz) format.")
+>>>>>>> b26c06ab2b40186140e3a4a1e498abddda8af408
 
     # Optional option.
-    op.add_option("--seed", "--random-seed", action="store", dest="seed",
+    op.add_option("--sd", "--random-seed", action="store", dest="seed",
             type="int", default=1234,
             help="Random seed. [default=%default]")
     op.add_option("-w", "--initial-weight", action="store", dest="weight",
@@ -61,9 +89,9 @@ if __name__=='__main__':
     seed   = int(options.seed)
 
     # Load training data.
-    data = np.loadtxt(fileinput.FileInput(args), dtype=theano.config.floatX).T
-    visnum = data.shape[1]
-    hidnum = int(options.hidnum)
+    visnum = args[1]
+    hidnum = args[2]
+    data = load_data(options.df, args[3], visnum)
 
     # Load Initial value of weight and bias.
     # If not specified, create it by random value.
@@ -79,7 +107,11 @@ if __name__=='__main__':
     else:
         b = np.zeros(hidnum, dtype=theano.config.floatX)
 
+<<<<<<< HEAD
     actf = activate_func.activate_generetor(options.af_type, w, b)
+=======
+    af = activate_func.generetor(options.af, w, b)
+>>>>>>> b26c06ab2b40186140e3a4a1e498abddda8af408
     vbias     = theano.shared(
                     value=np.zeros(visnum, dtype=theano.config.floatX))
     diffvbias = theano.shared(
