@@ -77,5 +77,33 @@ if __name__=='__main__':
         y    = T.fmatrix("y")
         cost = T.sum((p-y)*(p-y)) / mbsize
     
+    # Formula to calcurate gradient.
+    temp=[]
+    for layer in L:
+        temp.append(layer.w)
+        temp.append(layer.bias)
+    grads = T.grad(cost, temp)
+
+
+    # Formula to training.
+    update_diff=[]
+    for (i,layer) in enumerate(L):
+        update_diff.append((layer.diffw,   -lr*(grads[i*2]  +re*layer.w   )+mm*layer.diffw   ))
+        update_diff.append((layer.diffbias, -lr(grads[i*2+1]+re*layer.bais)+mm*layer.diffbias))
+
+    update_update=[]
+    for layer in L:
+        update_update.append((layer.w,   layer.w    + layer.diffw   ))
+        update_update.append((layer.bias,layer.bias + layer.diffbias))
+
+    trainer_diff  = theano.function(inputs=[x,y], outputs=cost, updates=updates_diff)
+    trainer_update= theano.function(intputs=[],   outputs=None, update=update_update)
+
+    # Formula to eval.
+    if options.ot == 'c':
+        err=T.sum(T.neq(T.argmax(p,axis=1),y))
+        tester=theano.function(inputs=[x,y], output=err)
+    elif options.ot == 'f':
+        tester = theano.function(intput=[x,y], output=cost)
 
 
