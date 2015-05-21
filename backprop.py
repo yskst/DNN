@@ -12,6 +12,13 @@ import theano
 import theano.tensor as T
 from mylibs import activate_func
 
+def shuffle(dat, lab):
+    state = np.random.get_state()
+    np.random.shuffle(dat)
+    np.random.set_state(state)
+    np.random.shuffle(lab)
+    return
+
 if __name__=='__main__':
 
     # Option analysis.
@@ -106,4 +113,20 @@ if __name__=='__main__':
     elif options.ot == 'f':
         tester = theano.function(intput=[x,y], output=cost)
 
+    np.random.seed(seed)
+    mbnum = dat.shape()[1] / mbsize
 
+    for i in range(seed):
+        shuffle(dat, lab)
+
+        c=0.0
+        e=0.0
+        for b in range(mbsize):
+            c += trainer_diff(dat[mbsize*b:(mbsize+1)*b], lab[mbsize*b:(mbsize+1)*b])
+            trainer_update()
+            e += tester(dat[mbsize*b:(mbsize+1)*b], lab[mbsize*b:(mbsize+1)*b])
+        
+        c/=mbnum*mbsize
+        e/=mbnum*mbsize
+
+        sys.stdout.write("%4d ephoch, cost= %0.8e mse= %0.8e\n" % (i, c, e))
