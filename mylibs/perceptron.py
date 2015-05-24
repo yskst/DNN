@@ -4,8 +4,8 @@
 import sys
 import inspect
 import numpy
-#import theano
-#import theano.tensor as T
+import theano
+import theano.tensor as T
 
 
 """ This is the libraries in activatefer functions. """
@@ -16,13 +16,13 @@ def load(fname):
     return generetor(f['type'], f['w'], f['bias'])
 
 def generetor(func, weight, bias):
-    if func == "linear":
+    if func == "LinearLayer":
         return LinearLayer(weight, bias)
-    elif func == "sigmoid":
+    elif func == "SigmoidLayer":
         return SigmoidLayer(weight, bias)
-    elif func == "softmax":
+    elif func == "SoftmaxLayer":
         return SoftmaxLayer(weight, bias)
-    elif func == "relu":
+    elif func == "ReLULayer":
         return ReLULayer(weight, bias)
     else:
         raise NameError(func + ' is not defines as activatefer function.')
@@ -86,5 +86,5 @@ class ReLULayer(LinearLayer):
         super(ReLULayer, self).save(fname, "relu")       
 
 myself = sys.modules[__name__]
-activate_functions = [n for n,m in inspect.getmembers(myself, inspect.isclass)]
+percptron_type = [n for n,m in inspect.getmembers(myself, inspect.isclass)]
 

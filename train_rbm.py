@@ -11,7 +11,7 @@ import numpy as np
 import theano
 import theano.tensor as T
 from theano.sandbox.rng_mrg import MRG_RandomStreams as RandomStreams
-from mylibs import activate_func
+from mylibs import perceptron
 
 def stderr(s):
     sys.stderr.write(s)
@@ -54,21 +54,12 @@ if __name__=='__main__':
     op.add_option("--rt", action="store", dest="rbmtype",
             type="choice", choices=["gb", "bb"], metavar="[gb/bb]",
             help="gb:gaussain-bernoulli, bb:bernoulli-bernoulli")
-<<<<<<< HEAD
-        op.add_option("--af", action="store",dest="af",
-            type="choice", choices=activate_func.activate_functions, metavar=str(activate_func.activate_functions),
-            help="Activete function.\n")
-        op.add_option("--df", action="store",dest="df",
-            type="choice", choices=["f4ne", "f4be", "f4le", "npy"], metavar="[f4ne/f4be/f4le/npy]",
-            help="sample data is raw 4byte float format with native/big/little endian or npy(npz) format.")
-=======
     op.add_option("--af", action="store",dest="af",
-            type="choice", choices=activate_func.activate_functions, metavar=str(activate_func.activate_functions),
+            type="choice", choices=perceptron.perceptrontions, metavar=str(perceptron.perceptrontions),
             help="Activete function.\n")
     op.add_option("--df", action="store",dest="df",
             type="choice", choices=["f4ne", "f4be", "f4le", "npy"], metavar="[f4ne/f4be/f4le/npy]",
             help="sample data is raw 4byte float format with native/big/little endian or npy(npz) format.")
->>>>>>> b26c06ab2b40186140e3a4a1e498abddda8af408
 
     # Optional option.
     op.add_option("--sd", "--random-seed", action="store", dest="seed",
@@ -107,11 +98,7 @@ if __name__=='__main__':
     else:
         b = np.zeros(hidnum, dtype=theano.config.floatX)
 
-<<<<<<< HEAD
-    actf = activate_func.activate_generetor(options.af_type, w, b)
-=======
-    af = activate_func.generetor(options.af, w, b)
->>>>>>> b26c06ab2b40186140e3a4a1e498abddda8af408
+    af = perceptron.generetor(options.af, w, b)
     vbias     = theano.shared(
                     value=np.zeros(visnum, dtype=theano.config.floatX))
     diffvbias = theano.shared(
