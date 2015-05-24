@@ -1,13 +1,15 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-import theano
-import theano.tensor as T
+import sys
+import inspect
 import numpy
+#import theano
+#import theano.tensor as T
 
-# This is the libraries in activatefer functions.
 
-activate_functions = ["linear", "sigmoid", "softmax", "relu"]
+""" This is the libraries in activatefer functions. """
+
 
 def load(fname):
     f = numpy.load(fname)
@@ -82,3 +84,7 @@ class ReLULayer(LinearLayer):
         return T.max(super(ReLULayer, self).forward(x))
     def save(self, fname):
         super(ReLULayer, self).save(fname, "relu")       
+
+myself = sys.modules[__name__]
+activate_functions = [n for n,m in inspect.getmembers(myself, inspect.isclass)]
+
