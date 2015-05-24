@@ -32,7 +32,7 @@ def load_data(format, fname, visnum):
         return np.fromfile(fname, dtype=type).reshape(visnum,-1)
 
 if __name__=='__main__':
-
+    floatX = theano.shared.floatX
     # Option analysis.
     usage="%prog [options] hidnum visnum file"
     desc ="Training Restricted Boltzmann machine."
@@ -99,21 +99,21 @@ if __name__=='__main__':
         b = np.zeros(hidnum, dtype=theano.config.floatX)
 
     af = perceptron.generetor(options.af, w, b)
-    vbias     = theano.shared(
-                    value=np.zeros(visnum, dtype=theano.config.floatX))
-    diffvbias = theano.shared(
-                    value=np.zeros(visnum,dtype=theano.config.floatX))
+    vbias     = theano.shared(value=np.zeros(visnum, dtype=floatX))
+
+    diffw     = theano.shared(value=np.zeros(af.w.shape,dtype=floatX))
+    diffhbias = theano.shared(value=np.zeros(hidnum,dtype= floatX))
+    diffvbias = theano.shared(value=np.zeros(visnum,dtype= floatX))
 
     
     # Create a formula of propagation.
-
     gibbs_rng=RandomStreams(
             np.random.RandomState(seed).randint(2**30))
 
     v0act=T.fmatrix("v0act")
     h0act=actf.forward(v0act)
     h0smp=gibbs_rng.binomial(
-        size=(mbsize, hidnum),n=1,p=h0act,dtype=theano.config.floatX)
+        size=(mbsize, hidnum),n=1,p=h0act,dtype=floatX)
     if options.rbmtype == 'gb':
         v1act=T.dot(h0smp, actf.w.T) + vbias
     elif options.rbmtype == 'bb':
@@ -126,14 +126,14 @@ if __name__=='__main__':
     grad_vbias= (T.sum(v1act,axis=0) -T.sum(v0act,axis=0) )/mbsize
 
     updates_diff=[
-            (actf.diffw, -lr*grad_w     +mm*actf.diffw    -re*actf.w),
-            (actf.bias,  -lr*grad_hbias +mm*actf.diffbias         ),
+            (diffw,    -lr*grad_w     +mm*actf.diffw    -re*actf.w),
+            (hbias,    -lr*grad_hbias +mm*actf.diffbias         ),
             (diffvbias,-lr*grad_vbias +mm*diffvbias           )]
 
     updates_update=[
-            (actf.w,    actf.w   +actf.diffw    ),
-            (actf.bias, actf.bias+af.diffbias) ,
-            (vbias,   vbias  +diffvbias)]
+            (actf.w,    actf.w   +diffw    ),
+            (actf.bias, actf.bias+diffhbias) ,
+            (vbias,     vbias    +diffvbias)]
 
     mse=T.mean((v0act-v1act)**2)
 

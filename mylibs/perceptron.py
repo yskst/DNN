@@ -41,12 +41,6 @@ class LinearLayer(object):
         self.w    = theano.shared(value=weight)
         self.bias = theano.shared(value=bias)
 
-        # Allocate the memory of parameter's difference.
-        self.diffw    = theano.shared(
-                value=numpy.zeros((self.idim,self.odim), dtype=floatX))
-        self.diffbias = theano.shared(
-                value=numpy.zeros(self.idim, dtype=floatX))
-
     # Transfer function.
     def forward(self, x):
         return T.dot(x, self.w) + self.bias
