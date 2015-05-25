@@ -10,7 +10,8 @@ from optparse import OptionParser
 import numpy as np
 import theano
 import theano.tensor as T
-from mylibs import activate_func
+from mylibs import perceptron
+from mylibs import mlp
 
 def shuffle(dat, lab):
     state = np.random.get_state()
@@ -29,9 +30,7 @@ if __name__=='__main__':
     
     # Required option.
     op.add_option("-l", "--init-layer", action="append", dest="layers",
-            metavar="FILE", type="string",
-            help="Initial value of each layer. This option can use several times.
-                  The decleared order is mutch to the each layer.")
+            metavar="FILE", type="string", help="Initial value of MLP")
     op.add_option("-o",  "--output", action="store", dest="output",metavar="FILE"
             type="string",help="output file name which is npz format")
     op.add_option("--lr", action="store", dest="lr",
@@ -63,26 +62,22 @@ if __name__=='__main__':
 
 
     # load data.
-    L = []
-    for f in options.layers:
-        L.append(activate_func.load(f))
-
+    m = mlp.load(options.layer)
     dat = np.loadtxt(FileInput(args[1::2]))
     tar = np.loadtxt(Fileinput(args[2::2]))
 
-    # Formula to calcurate output of DNN.
-    x = T.fmatrix("x")
-    p = L[0].forward(x)
-    for layer in L[1:]:
-        p = layer.forward(p)
+    # Allocate memory to update
+    diffw    = []
+    diffbias = []
+    for i in 
 
     # Formula to calcurate cost which is cross entropy.
     if options.ot == 'c':
         y    = T.ivector("y")
-        cost = T.sum(T.nnet.categorical_crossentropy(p, y)) / mbsize
+        cost = T.sum(T.nnet.categorical_crossentropy(mlp.f, y)) / mbsize
     else if options.ot == 'f':
         y    = T.fmatrix("y")
-        cost = T.sum((p-y)*(p-y)) / mbsize
+        cost = T.sum((mlp.f-y)*(mlp.f-y)) / mbsize
     
     # Formula to calcurate gradient.
     temp=[]
@@ -108,7 +103,7 @@ if __name__=='__main__':
 
     # Formula to eval.
     if options.ot == 'c':
-        err=T.sum(T.neq(T.argmax(p,axis=1),y))
+        err=T.sum(T.neq(T.argmax(mlp.f, axis=1),y))
         tester=theano.function(inputs=[x,y], output=err)
     elif options.ot == 'f':
         tester = theano.function(intput=[x,y], output=cost)
@@ -130,3 +125,5 @@ if __name__=='__main__':
         e/=mbnum*mbsize
 
         sys.stdout.write("%4d ephoch, cost= %0.8e mse= %0.8e\n" % (i, c, e))
+    mlp.save(options.output)
+
