@@ -21,7 +21,7 @@ def shuffle(dat, lab):
     return
 
 if __name__=='__main__':
-
+    floatX = theano.config.floatX
     # Option analysis.
     usage="%prog [options] [data label]...\n
             [data label] must be an even number.The Even-numbered is the input and the odd-numbered is the output correspondig to the input."
@@ -62,14 +62,19 @@ if __name__=='__main__':
 
 
     # load data.
-    m = mlp.load(options.layer)
+    m   = mlp.load(options.layer)
     dat = np.loadtxt(FileInput(args[1::2]))
     tar = np.loadtxt(Fileinput(args[2::2]))
 
     # Allocate memory to update
     diffw    = []
     diffbias = []
-    for i in 
+    for i in m:
+        shape = i.w.shape
+        diffw.append(
+                theano.shared(value=numpy.zeros(shape, dtype=floatX)).reshape(shape))
+        diffbais.append(
+                theano.shared(value=numpy.zeros(shape[1], dtype=floatX)))
 
     # Formula to calcurate cost which is cross entropy.
     if options.ot == 'c':
@@ -81,7 +86,7 @@ if __name__=='__main__':
     
     # Formula to calcurate gradient.
     temp=[]
-    for layer in L:
+    for layer in mlp:
         temp.append(layer.w)
         temp.append(layer.bias)
     grads = T.grad(cost, temp)
@@ -89,17 +94,17 @@ if __name__=='__main__':
 
     # Formula to training.
     update_diff=[]
-    for (i,layer) in enumerate(L):
-        update_diff.append((layer.diffw,   -lr*(grads[i*2]  +re*layer.w   )+mm*layer.diffw   ))
-        update_diff.append((layer.diffbias, -lr(grads[i*2+1]+re*layer.bais)+mm*layer.diffbias))
+    for i,layer in enumerate(L):
+        update_diff.append((diffw[i],    -lr*(grads[i*2]   + re*layer.w  ) + mm*diffw[i]   ))
+        update_diff.append((diffbias[i], -lr*(grads[i*2+1] + re*layer.bais)+ mm*diffbias[i]))
 
     update_update=[]
-    for layer in L:
-        update_update.append((layer.w,   layer.w    + layer.diffw   ))
-        update_update.append((layer.bias,layer.bias + layer.diffbias))
+    for i,layer in enumerate(L):
+        update_update.append((layer.w,   layer.w    + diffw[i]   ))
+        update_update.append((layer.bias,layer.bias + diffbias[i]))
 
     trainer_diff  = theano.function(inputs=[x,y], outputs=cost, updates=updates_diff)
-    trainer_update= theano.function(intputs=[],   outputs=None, update=update_update)
+    trainer_update= theano.function(intputs=[],   outputs=None, updates=update_update)
 
     # Formula to eval.
     if options.ot == 'c':

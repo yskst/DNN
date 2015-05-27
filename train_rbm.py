@@ -29,10 +29,10 @@ def load_data(format, fname, visnum):
         if   format == 'f4be': type='>f4'
         elif format == 'f4le': type='<f4'
         elif format == 'f4ne': type='=f4'
-        return np.fromfile(fname, dtype=type).reshape(visnum,-1)
+        return np.fromfile(fname, dtype=type).reshape(-1, visnum)
 
 if __name__=='__main__':
-    floatX = theano.shared.floatX
+    floatX = theano.config.floatX
     # Option analysis.
     usage="%prog [options] hidnum visnum file"
     desc ="Training Restricted Boltzmann machine."
@@ -55,7 +55,7 @@ if __name__=='__main__':
             type="choice", choices=["gb", "bb"], metavar="[gb/bb]",
             help="gb:gaussain-bernoulli, bb:bernoulli-bernoulli")
     op.add_option("--af", action="store",dest="af",
-            type="choice", choices=perceptron.perceptrontions, metavar=str(perceptron.perceptrontions),
+            type="choice", choices=perceptron.percptron_type , metavar=str(perceptron.percptron_type),
             help="Activete function.\n")
     op.add_option("--df", action="store",dest="df",
             type="choice", choices=["f4ne", "f4be", "f4le", "npy"], metavar="[f4ne/f4be/f4le/npy]",
@@ -80,9 +80,9 @@ if __name__=='__main__':
     seed   = int(options.seed)
 
     # Load training data.
-    visnum = args[1]
-    hidnum = args[2]
-    data = load_data(options.df, args[3], visnum)
+    visnum = int(args[0])
+    hidnum = int(args[1])
+    data = load_data(options.df, args[2], visnum)
 
     # Load Initial value of weight and bias.
     # If not specified, create it by random value.
@@ -100,8 +100,8 @@ if __name__=='__main__':
 
     af = perceptron.generetor(options.af, w, b)
     vbias     = theano.shared(value=np.zeros(visnum, dtype=floatX))
-
-    diffw     = theano.shared(value=np.zeros(af.w.shape,dtype=floatX))
+    
+    diffw     = theano.shared(value=np.zeros((visnum,hidnum),dtype=floatX))
     diffhbias = theano.shared(value=np.zeros(hidnum,dtype= floatX))
     diffvbias = theano.shared(value=np.zeros(visnum,dtype= floatX))
 
@@ -111,14 +111,14 @@ if __name__=='__main__':
             np.random.RandomState(seed).randint(2**30))
 
     v0act=T.fmatrix("v0act")
-    h0act=actf.forward(v0act)
+    h0act=af.forward(v0act)
     h0smp=gibbs_rng.binomial(
         size=(mbsize, hidnum),n=1,p=h0act,dtype=floatX)
     if options.rbmtype == 'gb':
-        v1act=T.dot(h0smp, actf.w.T) + vbias
-    elif options.rbmtype == 'bb':
+        v1act=T.dot(h0smp, af.w.T) + vbias
+    else:
         v1act=T.nnet.sigmoid(T.dot(h0smp, af.w.T) + vbias)
-    h1act=actf.forward(v1act)
+    h1act=af.forward(v1act)
 
     # Create a formula of update.
     grad_w    = (T.dot(v1act.T,h1act)-T.dot(v0act.T,h0act))/mbsize
@@ -126,14 +126,14 @@ if __name__=='__main__':
     grad_vbias= (T.sum(v1act,axis=0) -T.sum(v0act,axis=0) )/mbsize
 
     updates_diff=[
-            (diffw,    -lr*grad_w     +mm*actf.diffw    -re*actf.w),
-            (hbias,    -lr*grad_hbias +mm*actf.diffbias         ),
-            (diffvbias,-lr*grad_vbias +mm*diffvbias           )]
+            (diffw,     -lr*grad_w     +mm*diffw     -re*af.w),
+            (diffhbias, -lr*grad_hbias +mm*diffhbias         ),
+            (diffvbias, -lr*grad_vbias +mm*diffvbias         )]
 
     updates_update=[
-            (actf.w,    actf.w   +diffw    ),
-            (actf.bias, actf.bias+diffhbias) ,
-            (vbias,     vbias    +diffvbias)]
+            (af.w,    af.w   +diffw    ),
+            (af.bias, af.bias+diffhbias) ,
+            (vbias,   vbias    +diffvbias)]
 
     mse=T.mean((v0act-v1act)**2)
 
@@ -164,4 +164,4 @@ if __name__=='__main__':
         sys.stdout.write("%3d epoch, %e mse (%f sec)\n" % (e+1, err, t2-t1)) 
 
     # output model parameter.
-    actf.save(options.output)
+    af.save(options.output)

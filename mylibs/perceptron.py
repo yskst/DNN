@@ -45,7 +45,7 @@ class LinearLayer(object):
     def forward(self, x):
         return T.dot(x, self.w) + self.bias
     
-    def save(self, fname, acttype="linear"):
+    def save(self, fname, acttype="LinearLayer"):
         numpy.savez(fname, type=acttype, w=self.w.get_value(), bias=self.bias.get_value())       
 
 # Softmax class
@@ -55,7 +55,7 @@ class SoftmaxLayer(LinearLayer):
     def forward(self, x):
         return T.nnet.softmax(super(SoftmaxLayer, self).forward(x))
     def save(self, fname):
-        super(SoftmaxLayer, self).save(fname, "softmax")       
+        super(SoftmaxLayer, self).save(fname, self.__class__.__name__)
 
 
 # Sigmoid class
@@ -65,7 +65,7 @@ class SigmoidLayer(LinearLayer):
     def forward(self, x):
         return T.nnet.sigmoid(super(SigmoidLayer, self).forward(x))
     def save(self, fname):
-        super(SigmoidLayer, self).save(fname, "sigmoid")       
+        super(SigmoidLayer, self).save(fname, self.__class__.__name__)       
                
 
         
@@ -77,7 +77,7 @@ class ReLULayer(LinearLayer):
     def forward(self, x):
         return T.max(super(ReLULayer, self).forward(x))
     def save(self, fname):
-        super(ReLULayer, self).save(fname, "relu")       
+        super(ReLULayer, self).save(fname, self.__class__.__name__)       
 
 myself = sys.modules[__name__]
 percptron_type = [n for n,m in inspect.getmembers(myself, inspect.isclass)]
