@@ -42,7 +42,7 @@ class LinearLayer(object):
         self.bias = theano.shared(value=hbias)
 				
 			  if vbias:
-					self.vbias = theano.shared(value=vbias)
+					  self.vbias = theano.shared(value=vbias)
 
     # Transfer function.
     def forward(self, x):
