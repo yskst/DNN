@@ -16,16 +16,8 @@ def load(fname):
     return generetor(f['type'], f['w'], f['bias'], f['vbias'])
 
 def generetor(func, weight, hbias, vbias=None):
-    if func == "LinearLayer":
-        return LinearLayer(weight, hbias, vbias)
-    elif func == "SigmoidLayer":
-        return SigmoidLayer(weight, hbias, vbias)
-    elif func == "SoftmaxLayer":
-        return SoftmaxLayer(weight, hbias, vbias)
-    elif func == "ReLULayer":
-        return ReLULayer(weight, hbias, vbias)
-    else:
-        raise NameError(func + ' is not defines as activatefer function.')
+		return eval(func+'(weight,hbias,vbias)')
+
 
 
 class LinearLayer(object):
@@ -40,7 +32,7 @@ class LinearLayer(object):
         # Allocate the memory of parameter.
         self.w    = theano.shared(value=weight)
         self.bias = theano.shared(value=hbias)
-				
+
 			  if vbias:
 					  self.vbias = theano.shared(value=vbias)
 
