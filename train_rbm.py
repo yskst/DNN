@@ -97,9 +97,9 @@ if __name__=='__main__':
         b = np.loadtxt(option.bias, dtype=theano.config.floatX)
     else:
         b = np.zeros(hidnum, dtype=theano.config.floatX)
-
-    af = perceptron.generetor(options.af, w, b)
     vbias     = theano.shared(value=np.zeros(visnum, dtype=floatX))
+		
+		af = perceptron.generetor(options.af, w, b, vbias)
     
     diffw     = theano.shared(value=np.zeros((visnum,hidnum),dtype=floatX))
     diffhbias = theano.shared(value=np.zeros(hidnum,dtype= floatX))
@@ -115,9 +115,9 @@ if __name__=='__main__':
     h0smp=gibbs_rng.binomial(
         size=(mbsize, hidnum),n=1,p=h0act,dtype=floatX)
     if options.rbmtype == 'gb':
-        v1act=T.dot(h0smp, af.w.T) + vbias
+        v1act=T.dot(h0smp, af.w.T) + af.vbias
     else:
-        v1act=T.nnet.sigmoid(T.dot(h0smp, af.w.T) + vbias)
+        v1act=T.nnet.sigmoid(T.dot(h0smp, af.w.T) + af.vbias)
     h1act=af.forward(v1act)
 
     # Create a formula of update.
@@ -131,9 +131,9 @@ if __name__=='__main__':
             (diffvbias, -lr*grad_vbias +mm*diffvbias         )]
 
     updates_update=[
-            (af.w,    af.w   +diffw    ),
-            (af.bias, af.bias+diffhbias) ,
-            (vbias,   vbias    +diffvbias)]
+            (af.w,     af.w    + diffw    ),
+            (af.bias,  af.bias + diffhbias) ,
+            (af.vbias, af.vbias+ diffvbias)]
 
     mse=T.mean((v0act-v1act)**2)
 

@@ -13,17 +13,17 @@ import theano.tensor as T
 
 def load(fname):
     f = numpy.load(fname)
-    return generetor(f['type'], f['w'], f['bias'])
+    return generetor(f['type'], f['w'], f['bias'], f['vbias'])
 
-def generetor(func, weight, bias):
+def generetor(func, weight, hbias, vbias=None):
     if func == "LinearLayer":
-        return LinearLayer(weight, bias)
+        return LinearLayer(weight, hbias, vbias)
     elif func == "SigmoidLayer":
-        return SigmoidLayer(weight, bias)
+        return SigmoidLayer(weight, hbias, vbias)
     elif func == "SoftmaxLayer":
-        return SoftmaxLayer(weight, bias)
+        return SoftmaxLayer(weight, hbias, vbias)
     elif func == "ReLULayer":
-        return ReLULayer(weight, bias)
+        return ReLULayer(weight, hbias, vbias)
     else:
         raise NameError(func + ' is not defines as activatefer function.')
 
@@ -31,7 +31,7 @@ def generetor(func, weight, bias):
 class LinearLayer(object):
 
     # Constructer
-    def __init__(self, weight, bias):
+    def __init__(self, weight, hbias, vbias):
         floatX = theano.config.floatX
 
         self.idim = weight.shape[0]
@@ -39,14 +39,17 @@ class LinearLayer(object):
 
         # Allocate the memory of parameter.
         self.w    = theano.shared(value=weight)
-        self.bias = theano.shared(value=bias)
+        self.bias = theano.shared(value=hbias)
+				
+			  if vbias:
+					self.vbias = theano.shared(value=vbias)
 
     # Transfer function.
     def forward(self, x):
         return T.dot(x, self.w) + self.bias
     
     def save(self, fname, acttype="LinearLayer"):
-        numpy.savez(fname, type=acttype, w=self.w.get_value(), bias=self.bias.get_value())       
+        numpy.savez(fname, type=acttype, w=self.w.get_value(), bias=self.bias.get_value(), vbias=self.bias.get_value())       
 
 # Softmax class
 class SoftmaxLayer(LinearLayer):
