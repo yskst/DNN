@@ -25,8 +25,7 @@ def generetor(func, weight, hbias, vbias=None):
     elif func == "ReLULayer":
         return ReLULayer(weight, hbias, vbias)
     else:
-        raise NameError(func + ' is not defines as activatefer function.')
-
+        raise NameError(func + ' is not defined as activatefer function.')
 
 class LinearLayer(object):
 
@@ -40,13 +39,16 @@ class LinearLayer(object):
         # Allocate the memory of parameter.
         self.w    = theano.shared(value=weight)
         self.bias = theano.shared(value=hbias)
-				
-			  if vbias:
-					  self.vbias = theano.shared(value=vbias)
+
+        if vbias:
+		    self.vbias = theano.shared(value=vbias)
 
     # Transfer function.
     def forward(self, x):
         return T.dot(x, self.w) + self.bias
+
+    def inverse(self):
+        generetor(self.__class__.__name__, self.w.T, self.vbias, self.bias)
     
     def save(self, fname, acttype="LinearLayer"):
         numpy.savez(fname, type=acttype, w=self.w.get_value(), bias=self.bias.get_value(), vbias=self.bias.get_value())       
