@@ -8,7 +8,7 @@ from optparse import OptionParser
 import numpy as np
 import theano
 import theano.tensor as T
-from mylibs import perceptron
+from mylibs import mlp
 
 def stderr(s):
     sys.stderr.write(s)
@@ -64,11 +64,11 @@ if __name__=='__main__':
     mbsize = int(options.mb)
 
     # Load training data.
-    rbm = perceptron.load(options.rbm)
+    nn = mlp.load(options.rbm)
     data = load_data(options.df, args[0], rbm.idim)
     
     x = T.fmatrix("x")
-    y = rbm.forward(x)
+    y = nn.forward(x)
     
     fpropagation = theano.function(inputs=[x], outputs=y)
 
