@@ -12,6 +12,7 @@ def __get_npitem__(array, index):
 
 def load(fname):
      d = np.load(fname)
+     print d.keys()
      rbms = []
      for i in range(0, len(d), 3):
          rbms.append(perceptron.generetor(__get_npitem__(d,i), 

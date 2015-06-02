@@ -32,7 +32,7 @@ if __name__=='__main__':
         rbms.append(perceptron.load(fname))
 
     args.reverse()
-    for fname in args[1:]:
+    for fname in args:
         r = perceptron.load(fname)
         rbms.append(r.inverse())
 
