@@ -13,11 +13,11 @@ import theano.tensor as T
 
 def load(fname):
     dat = numpy.load(fname)
-    if 'arr_3' in dat:
-        vbias = dat['arr_3']
+    if 'vbias_0' in dat:
+        vbias = dat['vbias_0']
     else:
         vbias = None
-    return generetor(dat['arr_0'], dat['arr_1'], dat['arr_2'], dat['arr_3'])
+    return generetor(dat['type_0'], dat['w_0'], dat['hbias_0'], dat['vbias_0'])
 
 def generetor(func, weight, hbias, vbias=None):
     return eval(str(func)+'(weight,hbias,vbias)')
@@ -49,7 +49,10 @@ class LinearLayer(object):
         return generetor(self.__class__.__name__, self.w.get_value().T, self.vbias.get_value(), self.bias.get_value())
     
     def save(self, fname, acttype="LinearLayer"):
-        numpy.savez(fname, acttype, self.w.get_value(), self.bias.get_value(), self.bias.get_value()) 
+        numpy.savez(fname, type_0  = acttype, 
+                           w_0     = self.w.get_value(), 
+                           hbias_0 = self.bias.get_value(), 
+                           vbias_0 = self.bias.get_value()) 
 
 # Softmax class
 class SoftmaxLayer(LinearLayer):

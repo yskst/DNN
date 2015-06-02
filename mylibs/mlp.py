@@ -12,12 +12,16 @@ def __get_npitem__(array, index):
 
 def load(fname):
      d = np.load(fname)
-     print d.keys()
+     d.keys()
      rbms = []
-     for i in range(0, len(d), 3):
-         rbms.append(perceptron.generetor(__get_npitem__(d,i), 
-                                          __get_npitem__(d,i+1), 
-                                          __get_npitem__(d,i+2)))
+     i = 0
+     while 'w_'+str(i) in d:
+         s = str(i)
+         rbms.append(perceptron.generetor(d['type_' +s],
+                                          d['w_'    +s]
+                                          d['hbias_'+s]
+                                          d['vbias_'+s])
+         i+=1
      return mlp(rbms)
 
 class mlp:
@@ -42,8 +46,11 @@ class mlp:
         return self.f(x)
 
     def save(self, fname):
-        dlist = []
-        for p in self.__percepts__:
-            dlist.extend([p.__class__.__name__, p.w.get_value(), p.bias.get_value()])
+        dlist = {}
+        for i,p in enumerate(self.__percepts__):
+            s = str(i)
+            dlist['type_' +s] = p.__class__.name__
+            dlist['w_'    +s] = p.w.get_value()
+            dlist['hbias_'+s] = p.bias.get_value()
 
-        np.savez(fname, *dlist)
+        np.savez(fname, **dlist)
