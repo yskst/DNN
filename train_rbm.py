@@ -96,10 +96,10 @@ if __name__=='__main__':
     if options.bias:
         b = np.loadtxt(option.bias, dtype=theano.config.floatX)
     else:
-        b = np.zeros(hidnum, dtype=theano.config.floatX)
-    vbias     = theano.shared(value=np.zeros(visnum, dtype=floatX))
-		
-		af = perceptron.generetor(options.af, w, b, vbias)
+        b     = np.zeros(hidnum, dtype=theano.config.floatX)
+
+    vbias = np.zeros(visnum, dtype=floatX)
+    af = perceptron.generetor(options.af, w, b, vbias)
     
     diffw     = theano.shared(value=np.zeros((visnum,hidnum),dtype=floatX))
     diffhbias = theano.shared(value=np.zeros(hidnum,dtype= floatX))

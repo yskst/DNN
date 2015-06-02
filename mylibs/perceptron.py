@@ -13,12 +13,12 @@ import theano.tensor as T
 
 def load(fname):
     dat = numpy.load(fname)
-    if arr_3 in dat:
+    if 'arr_3' in dat:
         arr['arr_3'] = None
     return generetor(dat['arr_0'], dat['arr_1'], dat['arr_2'], dat['arr_3'])
 
 def generetor(func, weight, hbias, vbias=None):
-		return eval(func+'(weight,hbias,vbias)')
+    return eval(func+'(weight,hbias,vbias)')
 
 class LinearLayer(object):
 
@@ -32,8 +32,12 @@ class LinearLayer(object):
         # Allocate the memory of parameter.
         self.w    = theano.shared(value=weight)
         self.bias = theano.shared(value=hbias)
-		if vbias:
-				self.vbias = theano.shared(value=vbias)
+        if vbias is None:
+            self.vbias = theano.shared(
+                    value=numpy.zeros(self.odim, 
+                                      dtype=theano.config.floatX))
+        else:
+            self.vbias = theano.shared(value=vbias)
 
     # Transfer function.
     def forward(self, x):
@@ -47,8 +51,8 @@ class LinearLayer(object):
 
 # Softmax class
 class SoftmaxLayer(LinearLayer):
-    def __init__(self, weight, bias):
-        super(SoftmaxLayer, self).__init__(weight, bias)
+    def __init__(self, weight, bias, vbias):
+        super(SoftmaxLayer, self).__init__(weight, bias, vbias)
     def forward(self, x):
         return T.nnet.softmax(super(SoftmaxLayer, self).forward(x))
     def save(self, fname):
@@ -57,8 +61,8 @@ class SoftmaxLayer(LinearLayer):
 
 # Sigmoid class
 class SigmoidLayer(LinearLayer):
-    def __init__(self, weight, bias):
-        super(SigmoidLayer, self).__init__(weight, bias)
+    def __init__(self, weight, bias, vbias):
+        super(SigmoidLayer, self).__init__(weight, bias, vbias)
     def forward(self, x):
         return T.nnet.sigmoid(super(SigmoidLayer, self).forward(x))
     def save(self, fname):
@@ -69,8 +73,8 @@ class SigmoidLayer(LinearLayer):
 
 # Rectified Linear class.
 class ReLULayer(LinearLayer):
-    def __init__(self, weight, bias):
-        super(ReLULayer, self).__init__(weight, bias)
+    def __init__(self, weight, bias,vbias):
+        super(ReLULayer, self).__init__(weight, bias, vbias)
     def forward(self, x):
         return T.max(super(ReLULayer, self).forward(x))
     def save(self, fname):
