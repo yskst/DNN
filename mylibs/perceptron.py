@@ -10,6 +10,7 @@ import theano.tensor as T
 
 """ This is the libraries in activatefer functions. """
 
+percptron_type = [] # This array stored perceptron class name.
 
 def load(fname):
     dat = numpy.load(fname)
