@@ -18,10 +18,10 @@ def load(fname):
      while 'w_'+str(i) in d:
          s = str(i)
          rbms.append(perceptron.generetor(d['type_' +s],
-                                          d['w_'    +s]
-                                          d['hbias_'+s]
-                                          d['vbias_'+s])
-         i+=1
+                                          d['w_'    +s],
+                                          d['hbias_'+s],
+                                          d['vbias_'+s]))
+         i += 1
      return mlp(rbms)
 
 class mlp:
@@ -49,7 +49,7 @@ class mlp:
         dlist = {}
         for i,p in enumerate(self.__percepts__):
             s = str(i)
-            dlist['type_' +s] = p.__class__.name__
+            dlist['type_' +s] = p.__class__.__name__
             dlist['w_'    +s] = p.w.get_value()
             dlist['hbias_'+s] = p.bias.get_value()
 
