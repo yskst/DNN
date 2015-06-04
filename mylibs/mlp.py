@@ -19,16 +19,15 @@ def load(fname):
          s = str(i)
          rbms.append(perceptron.generetor(d['type_' +s],
                                           d['w_'    +s],
-                                          d['hbias_'+s],
-                                          d['vbias_'+s]))
+                                          d['hbias_'+s]))
          i += 1
      return mlp(rbms)
 
 class mlp:
     def __init__(self, rbms):
-        x        = T.fvector("x")
+        self.x        = T.fmatrix("x")
         self.__percepts__ = rbms
-        self.f            = rbms[0].forward(x)
+        self.f            = rbms[0].forward(self.x)
         for rbm in rbms[1:]:
             self.f = rbm.forward(self.f)
 
@@ -44,6 +43,7 @@ class mlp:
 
     def forward(self, x):
         return self.f(x)
+
 
     def save(self, fname):
         dlist = {}

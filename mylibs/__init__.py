@@ -2,4 +2,4 @@
 
 def list2metavar(list):
     s = str(list)
-    s.replace("'","").replace(", ", "/")
+    return s.replace("'","").replace(", ", "/")

@@ -6,16 +6,25 @@
 import fileinput
 import numpy as np
 
-format_dict = {'f4be':'>f4', 'f4le':'<f4', 'f4ne':'=f4', 'npy':None, 'text':None}
+
+def __parse_fmt__(fmt):
+    r = ""
+    e = fmt[2:4]
+    if   e == "le": r = "<"
+    elif e == "be": r = ">"
+    elif e == "ne": r = "="
+    else:
+        raise NameError("The encoding %s is unknown." % fmt)
+    return r + fmt[0:2]
+    
+
 
 def load_data(fname, fmt):
-
-    if fmt not in format_dict.keys():
-        raise IOError('The format type %s is unknown.' %s fmt)
-
     if fmt == 'npy':
         return np.load(fname)
     elif fmt == 'text':
         return np.loadtxt(fname)
     else:
-        return np.fromfile(fname, dtype=format_dict[$fmt])
+        dt = np.dtype(__parse_fmt__(fmt))
+        return np.fromfile(fname, dtype=dt)
+

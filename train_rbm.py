@@ -57,7 +57,7 @@ if __name__=='__main__':
     op.add_option("--af", action="store",dest="af",
             type="choice", choices=perceptron.percptron_type , metavar=str(perceptron.percptron_type),
             help="Activete function.\n")
-    op.add_option("--df", action="store",dest="df",
+    op.add_option("--dt", action="store",dest="df",
             type="choice", choices=["f4ne", "f4be", "f4le", "npy"], metavar="[f4ne/f4be/f4le/npy]",
             help="sample data is raw 4byte float format with native/big/little endian or npy(npz) format.")
 
