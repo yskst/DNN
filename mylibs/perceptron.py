@@ -13,6 +13,15 @@ import theano.tensor as T
 percptron_type = [] # This array stored perceptron class name.
 
 def load(fname):
+    """
+    Load perceptron class from npz file.
+    
+    Parameter:
+        fname: The file name or file like object.
+
+    Return:
+        The class object of loaded perceptron.
+    """
     dat = numpy.load(fname)
     if 'vbias_0' in dat:
         vbias = dat['vbias_0']
@@ -20,7 +29,22 @@ def load(fname):
         vbias = None
     return generetor(dat['type_0'], dat['w_0'], dat['hbias_0'], dat['vbias_0'])
 
+
 def generetor(func, weight, hbias, vbias=None):
+    """ 
+    Generate perceptron class from parameter.
+
+    Parameter:
+        func:   The name of activate function which must be included in perceptron_type.
+        weight: The matrix of weight parameter which is numpy.ndarray.
+        hbias:  The vector of hidden layer's bias which is numpy.ndarray.
+        vbias:  The vector of hidden layer's bias which is numpy.ndarray.
+                (optional)
+
+    Return:
+        Created class object.
+
+    """
     return eval(str(func)+'(weight,hbias,vbias)')
 
 class LinearLayer(object):
