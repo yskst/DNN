@@ -89,15 +89,15 @@ if __name__=='__main__':
     if options.weight:
         w = np.loadtxt(options.weight, dtype=theano.config.floatX)
     else:
-        w = np.random.RandomState(seed).uniform(
+        w = np.asarray(np.random.RandomState(seed).uniform(
                 low=-4.0*np.sqrt(6.0/(hidnum+visnum)),
                 high=4.0*np.sqrt(6.0/(hidnum+visnum)),
-                size=(visnum, hidnum)).astype(theano.config.floatX)
+                size=(visnum, hidnum)), dtype=floatX)
     if options.bias:
-        b = np.loadtxt(option.bias, dtype=theano.config.floatX)
+        b = np.loadtxt(option.bias, dtype=floatX)
     else:
-        b     = np.zeros(hidnum, dtype=theano.config.floatX)
-
+        b     = np.zeros(hidnum, dtype=floatX)
+    
     vbias = np.zeros(visnum, dtype=floatX)
     af = perceptron.generetor(options.af, w, b, vbias)
     
@@ -132,13 +132,13 @@ if __name__=='__main__':
 
     updates_update=[
             (af.w,     af.w    + diffw    ),
-            (af.bias,  af.bias + diffhbias) ,
+            (af.bias,  af.bias + diffhbias),
             (af.vbias, af.vbias+ diffvbias)]
 
     mse=T.mean((v0act-v1act)**2)
 
     trainer_diff  =theano.function(inputs=[v0act],
-            outputs=mse,
+            outputs=[mse,h0act],
             updates=updates_diff)
 
     trainer_update=theano.function(inputs=[],
@@ -146,7 +146,7 @@ if __name__=='__main__':
             updates=updates_update)
 
     np.random.seed(seed)
-    mbnum=data.shape[0]/mbsize
+    mbnum = int(data.shape[0]/mbsize)
 
     for e in range(options.epoch):
         # shuffle of training data
@@ -156,12 +156,16 @@ if __name__=='__main__':
         # estimate by mini-batch
         err = 0.0
         for b in range(mbnum):
-            err += trainer_diff(data[mbsize*b:mbsize*(b+1)])
+            tmp,v= trainer_diff(data[mbsize*b:mbsize*(b+1)])
+            err += tmp
+            if np.isnan(af.bias.get_value()).any():
+                print str(b)
+                sys.exit(1)
             trainer_update()
-        err/=mbnum
+            err/=mbnum
         t2 = time.clock()
         
-        sys.stdout.write("%3d epoch, %e mse (%f sec)\n" % (e+1, err, t2-t1)) 
+        sys.stderr.write("%3d epoch, %e mse (%f sec)\n" % (e+1, err, t2-t1)) 
 
     # output model parameter.
     af.save(options.output)

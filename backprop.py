@@ -70,7 +70,7 @@ if __name__=='__main__':
     # load data.
     m   = mlp.load(op.layer)
     dat = dataio.load_data(args[0], op.df).reshape(-1, m[0].idim).astype(theano.config.floatX)
-    tar = dataio.load_data(args[1], op.tf).reshape(-1, m[-1].odim)
+    tar = dataio.load_data(args[1], op.tf)
 
     # Allocate memory to update
     diffw    = []
@@ -84,11 +84,11 @@ if __name__=='__main__':
 
     # Formula to calcurate cost which is cross entropy.
     if op.ot == 'c':
-        tar  = np.asarray(tar, dtype=np.int32)
+        tar.astype(np.int32)
         y    = T.ivector("y")
         cost = T.sum(T.nnet.categorical_crossentropy(m.f, y)) / mbsize
     elif op.ot == 'f':
-        tar  = tar.astype(np.float32)
+        tar = tar.reshape(-1, m[-1].odim).astype(np.float32)
         y    = T.fmatrix("y")
         cost = T.sum((m.f-y)*(m.f-y)) / mbsize
     
@@ -138,6 +138,6 @@ if __name__=='__main__':
         c/=mbnum*mbsize
         e/=mbnum*mbsize
 
-        sys.stdout.write("%4d ephoch, cost= %0.8e mse= %0.8e\n" % (i, c, e))
+        sys.stdout.write("%4d epoch, cost= %0.8e err= %0.8e\n" % (i, c, e))
     m.save(op.output)
 
