@@ -48,9 +48,16 @@ def generetor(func, weight, hbias, vbias=None):
     return eval(str(func)+'(weight,hbias,vbias)')
 
 class LinearLayer(object):
-
-    # Constructer
-    def __init__(self, weight, hbias, vbias):
+""" The base class of perceptron 
+    Parameter:
+        idim: the dimension of visible layer.
+        odim: the dimension of hidden layer.
+        w:    the shared variable of weight parameter.
+        bias: the shared variable of the hidden side layer.
+        vbias:the shared variable of the visible layer.
+"""
+    def __init__(self, weight, hbias, vbias=None):
+        """ Constructer """
         floatX = theano.config.floatX
 
         self.idim = weight.shape[0]
@@ -59,21 +66,24 @@ class LinearLayer(object):
         # Allocate the memory of parameter.
         self.w    = theano.shared(value=weight)
         self.bias = theano.shared(value=hbias)
-        if vbias is None:
-            self.vbias = theano.shared(
-                    value=numpy.zeros(self.odim, 
-                                      dtype=theano.config.floatX))
-        else:
-            self.vbias = theano.shared(value=vbias)
+
+        if vbias is None: self.vbias = None
+        else:             self.vbias = theano.shared(value=vbias)
 
     # Transfer function.
     def forward(self, x):
+        """ Get symbol of forwarding from x. 
+            Parameter:
+                x: symbolic matrix or vector         
+        """
         return T.dot(x, self.w) + self.bias
 
     def inverse(self):
+        """ Create perceptron which transform to inverse of this. """
         return generetor(self.__class__.__name__, self.w.get_value().T, self.vbias.get_value(), self.bias.get_value())
     
     def save(self, fname, acttype="LinearLayer"):
+        """ Save to parameter of this class. """
         numpy.savez(fname, type_0  = acttype, 
                            w_0     = self.w.get_value(), 
                            hbias_0 = self.bias.get_value(), 
@@ -81,6 +91,7 @@ class LinearLayer(object):
 
 # Softmax class
 class SoftmaxLayer(LinearLayer):
+    """ The softmax layer  which is override of LinearLayer. """
     def __init__(self, weight, bias, vbias):
         super(SoftmaxLayer, self).__init__(weight, bias, vbias)
     def forward(self, x):
@@ -91,6 +102,7 @@ class SoftmaxLayer(LinearLayer):
 
 # Sigmoid class
 class SigmoidLayer(LinearLayer):
+    """ The sigmoid layer  which is override of LinearLayer. """
     def __init__(self, weight, bias, vbias):
         super(SigmoidLayer, self).__init__(weight, bias, vbias)
     def forward(self, x):
@@ -102,6 +114,7 @@ class SigmoidLayer(LinearLayer):
         
 
 # Rectified Linear class.
+    """ The rectified linear layer  which is override of LinearLayer. """
 class ReLULayer(LinearLayer):
     def __init__(self, weight, bias,vbias):
         super(ReLULayer, self).__init__(weight, bias, vbias)
