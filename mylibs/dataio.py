@@ -20,6 +20,16 @@ def __parse_fmt__(fmt):
 
 
 def load_data(fname, fmt):
+    """ decode and load data. 
+        
+        Parameter:
+            fname: The filename or file object.
+            fmt:   The file format which must be 'npy' or 'text' or followin described format.
+                   If handle binary file, the format is concatenated type and the number of byte and endian. (e.g. f4be, i2ne)
+                   type: [f/i/u]=[float/int/unsgined int]
+                   endian: [be/le/ne]=[big/little/native]
+                    
+    """
     if fmt == 'npy':
         return np.load(fname)
     elif fmt == 'text':
