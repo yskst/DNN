@@ -48,14 +48,15 @@ def generetor(func, weight, hbias, vbias=None):
     return eval(str(func)+'(weight,hbias,vbias)')
 
 class LinearLayer(object):
-""" The base class of perceptron 
-    Parameter:
-        idim: the dimension of visible layer.
-        odim: the dimension of hidden layer.
-        w:    the shared variable of weight parameter.
-        bias: the shared variable of the hidden side layer.
-        vbias:the shared variable of the visible layer.
-"""
+    """ 
+    The base class of perceptron 
+        Parameter:
+            idim: the dimension of visible layer.
+            odim: the dimension of hidden layer.
+            w:    the shared variable of weight parameter.
+            bias: the shared variable of the hidden side layer.
+            vbias:the shared variable of the visible layer.
+    """
     def __init__(self, weight, hbias, vbias=None):
         """ Constructer """
         floatX = theano.config.floatX
@@ -119,7 +120,7 @@ class ReLULayer(LinearLayer):
     def __init__(self, weight, bias,vbias):
         super(ReLULayer, self).__init__(weight, bias, vbias)
     def forward(self, x):
-        return T.max(super(ReLULayer, self).forward(x))
+        return T.maximum(0, T.max(super(ReLULayer, self).forward(x)))
     def save(self, fname):
         super(ReLULayer, self).save(fname, self.__class__.__name__)       
 
