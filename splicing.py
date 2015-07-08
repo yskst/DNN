@@ -45,7 +45,6 @@ if __name__=='__main__':
     
     count = 1
     for i,s in enumerate(sys.argv):
-        print i,s
         if s == '-l' or s == '--llen':
             llen = int(sys.argv[i+1])
             count += 2

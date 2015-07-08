@@ -8,19 +8,10 @@ from optparse import OptionParser
 import numpy as np
 import theano
 import theano.tensor as T
-from mylibs import perceptron
+from mylibs import perceptron, mlp
 
 def stderr(s):
     sys.stderr.write(s)
-
-def save_le(f, data):
-    """ save with little endian """
-    data.tofile(f)
-
-def save_be(f, data):
-    """ save with big endian """
-    data.byteswap()
-    data.tofile(f)
 
 def load_data(format, fname, visnum):
     
@@ -45,8 +36,8 @@ if __name__=='__main__':
     op = OptionParser(usage=usage, description=desc)
     
     # Required option.
-    op.add_option("--rbm", action="store", dest="rbm", metavar="FILE",
-            type="string", help="Trained RBM file.")
+    op.add_option("--mlp", action="store", dest="nn", metavar="FILE",
+            type="string", help="Trained RBM or MLP file.")
     op.add_option("-o",  "--of", action="store", dest="output",
             type="string", help="output file name which is npz format")
     op.add_option("--df", action="store",dest="df",
@@ -62,24 +53,24 @@ if __name__=='__main__':
 
     (options, args) = op.parse_args()
     mbsize = int(options.mb)
-
+    
     # Load training data.
-    nn = perceptron.load(options.rbm)
-    data = load_data(options.df, args[0], nn.idim)
+    nn = mlp.load(options.nn)
+    data = load_data(options.df, args[0], nn[0].idim)
     
     x = T.fmatrix("x")
-    y = nn.forward(x)
     
-    fpropagation = theano.function(inputs=[x], outputs=y)
+    fpropagation = theano.function(inputs=[nn.x], outputs=nn.f)
 
     mbnum = len(data)/mbsize
     of = open(options.output, 'wb')
     
-    if options.ot == 'f4be': save = save_be
-    else                   : save = save_le
+    if options.ot == 'f4be': bswap = True
+    else                   : bswap = False
 
     for b in range(mbnum):
         o = fpropagation(data[b*mbsize:(b+1)*mbsize])
-        save(of, o)
+        o.byteswap(bswap)
+        o.tofile(of)
 
     of.close()

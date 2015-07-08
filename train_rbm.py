@@ -17,7 +17,6 @@ def stderr(s):
     sys.stderr.write(s)
 
 def load_data(format, fname, visnum):
-    
     if format == 'npy':
         data = load(fname)
 
@@ -30,6 +29,7 @@ def load_data(format, fname, visnum):
         elif format == 'f4le': type='<f4'
         elif format == 'f4ne': type='=f4'
         return np.fromfile(fname, dtype=type).reshape(-1, visnum)
+
 
 if __name__=='__main__':
     floatX = theano.config.floatX
